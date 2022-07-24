@@ -1,13 +1,13 @@
-package org.tretton63;
+package org.tretton63.lexer;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.tretton63.lexer.Token;
 
 public class TokenTest {
 
     @Test
     void testToken() {
-        Assertions.assertEquals(Token.CloseBracket, "]");
+        var token = new Token("=", Type.Equal);
+        Assertions.assertEquals(Type.Equal, token.type());
     }
 }
