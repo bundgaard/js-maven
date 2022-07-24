@@ -10,8 +10,6 @@ import java.util.Map;
 
 public class Lexer {
 
-    private int line = 0;
-    private int column = 0;
     private char currentChar = 0;
     private final PushbackInputStream pis;
     private static final Map<String, Type> KEYWORDS = new HashMap<>();
@@ -78,8 +76,14 @@ public class Lexer {
         }
     }
 
-    private String readName() {
-        return "";
+    private String readName() throws IOException {
+        var out = new StringBuilder();
+
+        while(Character.isLetterOrDigit(currentChar)) {
+            out.append(currentChar);
+            nextChar();
+        }
+        return out.toString();
     }
 
     private char peekChar() throws IOException {
