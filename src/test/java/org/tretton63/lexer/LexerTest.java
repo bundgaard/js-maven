@@ -2,6 +2,8 @@ package org.tretton63.lexer;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class LexerTest {
@@ -55,5 +57,23 @@ public class LexerTest {
         var lexer = new Lexer("");
         var token = lexer.nextToken();
         assertEquals(Type.EOF, token.type());
+    }
+
+    @Test
+    void testMathOperators() {
+        var expectedTokens = List.of(
+                new Token("+", Type.Plus),
+                new Token("-", Type.Minus),
+                new Token("/", Type.Divide),
+                new Token("*", Type.Multiply),
+                new Token("%", Type.Percentage));
+
+        var lexer = new Lexer("+-/*%");
+        int i = 0;
+        var token = lexer.nextToken();
+        while(token.type() != Type.EOF) {
+            assertEquals(token, expectedTokens.get(i++), "expected token");
+            token = lexer.nextToken();
+        }
     }
 }

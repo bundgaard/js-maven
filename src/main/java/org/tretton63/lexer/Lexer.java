@@ -114,7 +114,7 @@ public class Lexer {
 
     private boolean isMathOperator(char ch) {
         return switch (ch) {
-            case '-', '+', '*', '/' -> true;
+            case '-', '+', '*', '/', '%' -> true;
             default -> false;
         };
     }
