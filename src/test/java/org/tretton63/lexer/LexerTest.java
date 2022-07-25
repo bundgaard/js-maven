@@ -42,10 +42,18 @@ public class LexerTest {
         var token = lexer.nextToken();
         assertEquals(Type.Undefined, token.type());
     }
+
     @Test
     void testStringToken() {
         var lexer = new Lexer("      \"Hello, World\"");
         var token = lexer.nextToken();
         assertEquals("\"Hello, World\"", token.value());
+    }
+
+    @Test
+    void testEOF() {
+        var lexer = new Lexer("");
+        var token = lexer.nextToken();
+        assertEquals(Type.EOF, token.type());
     }
 }

@@ -69,6 +69,9 @@ public class Lexer {
                 var value = readNumber();
                 return new Token(value, Type.Number);
             } else {
+                if (currentChar == 0) {
+                    return new Token("eof", Type.EOF);
+                }
                 return new Token(String.valueOf(currentChar), Type.Illegal);
             }
         } catch (IOException e) {
@@ -128,7 +131,13 @@ public class Lexer {
     }
 
     private void nextChar() throws IOException {
-        currentChar = (char) pis.read();
+        var ch = pis.read();
+        if (ch==-1) {
+            currentChar = 0;
+        } else {
+            currentChar = (char) ch;
+        }
+
     }
 
     private String readNumber() throws IOException {
