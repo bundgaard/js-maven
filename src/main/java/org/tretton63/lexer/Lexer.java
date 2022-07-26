@@ -11,6 +11,7 @@ import java.util.Map;
 public class Lexer {
 
     private char currentChar = 0;
+    private int currentIdx = 0;
     private final PushbackInputStream pis;
     private static final Map<String, Type> KEYWORDS = new HashMap<>();
 
@@ -34,10 +35,13 @@ public class Lexer {
     public Token nextToken() {
         try {
             nextChar();
+            // System.out.printf("'%s' is whitespace %s\n", currentChar == '\n' ? "\\n" : currentChar, Character.isWhitespace(currentChar));
             while (Character.isWhitespace(currentChar)) {
                 nextChar();
             }
-            if (isMathOperator(currentChar)) {
+            if (currentChar == '/' && (peekChar() == '/' || peekChar() == '*')) {
+                return commentToken();
+            } else if (isMathOperator(currentChar)) {
                 return mathToken(currentChar);
             } else if (currentChar == '=') {
                 return new Token(String.valueOf(currentChar), Type.Equal);
@@ -81,10 +85,39 @@ public class Lexer {
         }
     }
 
+
+    private Token commentToken() throws IOException {
+        var value = new StringBuilder();
+        var peek = peekChar();
+        var multiline = false;
+
+        if (peek == '/') {
+            while(!(currentChar == '\n' || currentChar == 0)){
+                value.append(currentChar);
+                nextChar(); // EAT /
+            }
+            // read to \n or EOL
+        } else if (peek == '*'){
+            // read to */
+            multiline = true;
+            while(true) {
+                if (currentChar == '*' && peekChar() == '/') {
+                    value.append(currentChar);
+                    nextChar();
+                    value.append(currentChar);
+                    break;
+                }
+                value.append(currentChar);
+                nextChar();
+            }
+        }
+        return new Token(value.toString(), multiline ? Type.CommentBlock : Type.CommentLine);
+    }
+
     private String readName() throws IOException {
         var out = new StringBuilder();
 
-        while(Character.isLetterOrDigit(currentChar)) {
+        while (Character.isLetterOrDigit(currentChar)) {
             out.append(currentChar);
             nextChar();
         }
@@ -134,7 +167,7 @@ public class Lexer {
 
     private void nextChar() throws IOException {
         var ch = pis.read();
-        if (ch==-1) {
+        if (ch == -1) {
             currentChar = 0;
         } else {
             currentChar = (char) ch;
