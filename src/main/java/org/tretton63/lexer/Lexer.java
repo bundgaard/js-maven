@@ -41,12 +41,14 @@ public class Lexer {
                 return mathToken(currentChar);
             } else if (currentChar == '=') {
                 return new Token(String.valueOf(currentChar), Type.Equal);
+            } else if (currentChar == ';') {
+                return new Token(";", Type.Semi);
             } else if (currentChar == ':') {
                 return new Token(String.valueOf(currentChar), Type.Colon);
             } else if (currentChar == '.') {
                 return new Token(String.valueOf(currentChar), Type.Dot);
             } else if (currentChar == ',') {
-                return new Token(String.valueOf(currentChar), Type.Semi);
+                return new Token(String.valueOf(currentChar), Type.Comma);
             } else if (currentChar == '"' || currentChar == '\'') {
                 return stringToken();
             } else if (currentChar == '(') {

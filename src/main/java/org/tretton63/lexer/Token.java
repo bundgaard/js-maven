@@ -11,16 +11,6 @@ public class Token {
         this.value = value;
     }
 
-    public Token() {
-
-    }
-
-    public void setType(Type newType) {
-        this.type = newType;
-    }
-    public void setValue(String newValue) {
-        this.value = newValue;
-    }
 
     public String value() {
         return value;

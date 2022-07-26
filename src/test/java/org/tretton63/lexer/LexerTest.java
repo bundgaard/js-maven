@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class LexerTest {
 
@@ -30,12 +31,24 @@ public class LexerTest {
 
     @Test
     void testKeywords() {
-        var lexer = new Lexer("function hej() {}");
-        var token = lexer.nextToken();
+        var expectedTokens = List.of(
+                new Token("var", Type.Var),
+                new Token("function", Type.Function),
+                new Token("null", Type.Null),
+                new Token("undefined", Type.Undefined),
+                new Token("true", Type.True),
+                new Token("false", Type.False));
 
-        assertEquals(Type.Function, token.type());
-        token = lexer.nextToken();
-        assertEquals(Type.Identifier, token.type());
+        var lexer = new Lexer("     var function null undefined true false");
+        int i = 0;
+        var token = lexer.nextToken();
+        while (token.type() != Type.EOF) {
+            assertEquals(token.hashCode(), expectedTokens.get(i).hashCode());
+            assertEquals(token, expectedTokens.get(i++), "expected token");
+            assertNotNull(token.toString());
+
+            token = lexer.nextToken();
+        }
     }
 
     @Test
@@ -71,9 +84,28 @@ public class LexerTest {
         var lexer = new Lexer("+-/*%");
         int i = 0;
         var token = lexer.nextToken();
-        while(token.type() != Type.EOF) {
+        while (token.type() != Type.EOF) {
             assertEquals(token, expectedTokens.get(i++), "expected token");
             token = lexer.nextToken();
         }
+    }
+
+    @Test
+    void testBrackets() {
+        var expectedTokens = List.of(new Token("(", Type.OpenParen), new Token(")", Type.CloseParen),
+                new Token("[", Type.OpenBracket), new Token("]", Type.CloseBracket),
+                new Token("{", Type.OpenCurly), new Token("}", Type.CloseCurly),
+                new Token(",", Type.Comma), new Token(".", Type.Dot),
+                new Token(";", Type.Semi));
+
+        var i = 0;
+        var lexer = new Lexer("()[]{},.;");
+        var token = lexer.nextToken();
+        while (token.type() != Type.EOF) {
+
+            assertEquals(expectedTokens.get(i++), token);
+            token = lexer.nextToken();
+        }
+
     }
 }
