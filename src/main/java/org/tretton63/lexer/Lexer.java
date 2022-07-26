@@ -11,7 +11,6 @@ import java.util.Map;
 public class Lexer {
 
     private char currentChar = 0;
-    private int currentIdx = 0;
     private final PushbackInputStream pis;
     private static final Map<String, Type> KEYWORDS = new HashMap<>();
 
@@ -35,7 +34,6 @@ public class Lexer {
     public Token nextToken() {
         try {
             nextChar();
-            // System.out.printf("'%s' is whitespace %s\n", currentChar == '\n' ? "\\n" : currentChar, Character.isWhitespace(currentChar));
             while (Character.isWhitespace(currentChar)) {
                 nextChar();
             }
@@ -89,17 +87,15 @@ public class Lexer {
     private Token commentToken() throws IOException {
         var value = new StringBuilder();
         var peek = peekChar();
-        var multiline = false;
+        var block = false;
 
         if (peek == '/') {
             while(!(currentChar == '\n' || currentChar == 0)){
                 value.append(currentChar);
                 nextChar(); // EAT /
             }
-            // read to \n or EOL
         } else if (peek == '*'){
-            // read to */
-            multiline = true;
+            block = true;
             while(true) {
                 if (currentChar == '*' && peekChar() == '/') {
                     value.append(currentChar);
@@ -111,7 +107,7 @@ public class Lexer {
                 nextChar();
             }
         }
-        return new Token(value.toString(), multiline ? Type.CommentBlock : Type.CommentLine);
+        return new Token(value.toString(), block ? Type.CommentBlock : Type.CommentLine);
     }
 
     private String readName() throws IOException {
@@ -172,11 +168,9 @@ public class Lexer {
         } else {
             currentChar = (char) ch;
         }
-
     }
 
     private String readNumber() throws IOException {
-
         var out = new StringBuilder();
         while (Character.isDigit(currentChar)) {
             out.append(currentChar);
