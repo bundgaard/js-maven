@@ -2,7 +2,6 @@ package org.tretton63.lexer;
 
 import org.junit.jupiter.api.Test;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,12 +41,12 @@ public class LexerTest {
                 /* Hello World
                 */""");
         var token = lexer.nextToken();
-        var i = 0;
+        var current = 0;
         while (token.type() != Type.EOF) {
             System.out.printf("Token \"%s\"\n", token.value());
-            assertEquals(expectedTokens.get(i).value(), token.value(), token.value());
-            assertEquals(Type.CommentBlock, expectedTokens.get(i).type());
-            i++;
+            assertEquals(expectedTokens.get(current).value(), token.value(), token.value());
+            assertEquals(Type.CommentBlock, expectedTokens.get(current).type());
+            current++;
             token = lexer.nextToken();
         }
     }
@@ -55,12 +54,12 @@ public class LexerTest {
     @Test
     void testCommentLine() {
         var expectedTokens = List.of(new Token("// Hello World", Type.CommentLine));
-        var i = 0;
+        var current = 0;
         var lexer = new Lexer("// Hello World");
         var token = lexer.nextToken();
         while (token.type() != Type.EOF) {
-            assertEquals(expectedTokens.get(i).type(), Type.CommentLine);
-            i++;
+            assertEquals(expectedTokens.get(current).type(), Type.CommentLine);
+            current++;
             token = lexer.nextToken();
         }
     }
@@ -167,7 +166,7 @@ public class LexerTest {
                 new Token("*", Type.Multiply),
                 new Token("%", Type.Percentage));
 
-        var lexer = new Lexer("+-/*%");
+        var lexer = new Lexer("+ - / * %");
         int i = 0;
         var token = lexer.nextToken();
         while (token.type() != Type.EOF) {
@@ -178,18 +177,23 @@ public class LexerTest {
 
     @Test
     void testBrackets() {
-        var expectedTokens = List.of(new Token("(", Type.OpenParen), new Token(")", Type.CloseParen),
-                new Token("[", Type.OpenBracket), new Token("]", Type.CloseBracket),
-                new Token("{", Type.OpenCurly), new Token("}", Type.CloseCurly),
-                new Token(",", Type.Comma), new Token(".", Type.Dot),
+        var expectedTokens = List.of(
+                new Token("(", Type.OpenParen),
+                new Token(")", Type.CloseParen),
+                new Token("[", Type.OpenBracket),
+                new Token("]", Type.CloseBracket),
+                new Token("{", Type.OpenCurly),
+                new Token("}", Type.CloseCurly),
+                new Token(",", Type.Comma),
+                new Token(".", Type.Dot),
                 new Token(";", Type.Semi));
 
-        var i = 0;
+        var current = 0;
         var lexer = new Lexer("()[]{},.;");
         var token = lexer.nextToken();
         while (token.type() != Type.EOF) {
-
-            assertEquals(expectedTokens.get(i++), token);
+            assertEquals(expectedTokens.get(current), token);
+            current++;
             token = lexer.nextToken();
         }
 
