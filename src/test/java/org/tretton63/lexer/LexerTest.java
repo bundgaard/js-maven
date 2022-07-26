@@ -43,7 +43,6 @@ public class LexerTest {
         var token = lexer.nextToken();
         var current = 0;
         while (token.type() != Type.EOF) {
-            System.out.printf("Token \"%s\"\n", token.value());
             assertEquals(expectedTokens.get(current).value(), token.value(), token.value());
             assertEquals(Type.CommentBlock, expectedTokens.get(current).type());
             current++;
@@ -125,13 +124,13 @@ public class LexerTest {
                 new Token("false", Type.False));
 
         var lexer = new Lexer("     var function null undefined true false");
-        int i = 0;
+        int current = 0;
         var token = lexer.nextToken();
         while (token.type() != Type.EOF) {
-            assertEquals(token.hashCode(), expectedTokens.get(i).hashCode());
-            assertEquals(token, expectedTokens.get(i++), "expected token");
+            assertEquals(token.hashCode(), expectedTokens.get(current).hashCode());
+            assertEquals(token, expectedTokens.get(current), "expected token");
             assertNotNull(token.toString());
-
+            current++;
             token = lexer.nextToken();
         }
     }
