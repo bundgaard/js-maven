@@ -2,6 +2,7 @@ package org.tretton63.parser;
 
 import org.tretton63.ast.*;
 import org.tretton63.eval.BlockStatement;
+import org.tretton63.eval.CallExpression;
 import org.tretton63.eval.FunctionObject;
 import org.tretton63.lexer.Lexer;
 import org.tretton63.lexer.Token;
@@ -33,6 +34,7 @@ public class Parser {
         prefixParserMap.put(OpenCurly, new HashParselet());
         prefixParserMap.put(OpenBracket, new ArrayParselet());
         prefixParserMap.put(Function, new FunctionParselet());
+        prefixParserMap.put(OpenParen, new GroupedExpressionParselet());
 
         infixParserMap.put(Plus, new ParseInfixExpression());
         infixParserMap.put(Minus, new ParseInfixExpression());
@@ -40,7 +42,7 @@ public class Parser {
         infixParserMap.put(Multiply, new ParseInfixExpression());
         infixParserMap.put(Divide, new ParseInfixExpression());
         infixParserMap.put(Percentage, new ParseInfixExpression());
-        // infixParserMap.put(OpenParen, new ParseCallExpression());
+        infixParserMap.put(OpenParen, new CallExpressionParselet());
 
         // IndexExpression and CallExpression
 
@@ -57,8 +59,6 @@ public class Parser {
             }
             nextToken();
         }
-        System.out.println("Added " + p.statements().size() + " statement(s)");
-        System.out.println(p);
         return p;
     }
 
@@ -169,6 +169,30 @@ public class Parser {
         return current.type() == token;
     }
 
+    private class GroupedExpressionParselet implements PrefixParser {
+
+        @Override
+        public Expression apply(Parser parser, Token token) {
+            nextToken();
+            var expression = parseExpression(Lowest);
+            if (!expectPeek(CloseParen)) {
+                return null;
+            }
+            return expression;
+        }
+    }
+
+    private class CallExpressionParselet implements InfixParser {
+
+        @Override
+        public Expression apply(Parser parser, Expression left, Token token) {
+
+            var call = new CallExpression(current, left);
+            call.setArguments(parseExpressionList(CloseParen));
+            return call;
+        }
+    }
+
     public class ParseInfixExpression implements InfixParser {
 
         @Override
@@ -240,7 +264,7 @@ public class Parser {
         return block;
     }
 
-    public class FunctionParselet implements PrefixParser {
+    private class FunctionParselet implements PrefixParser {
 
         @Override
         public Expression apply(Parser parser, Token token) {
@@ -259,7 +283,7 @@ public class Parser {
         }
     }
 
-    public class ArrayParselet implements PrefixParser {
+    private class ArrayParselet implements PrefixParser {
 
         @Override
         public Expression apply(Parser parser, Token token) {
@@ -269,7 +293,7 @@ public class Parser {
         }
     }
 
-    public class HashParselet implements PrefixParser {
+    private class HashParselet implements PrefixParser {
         @Override
         public Expression apply(Parser parser, Token token) {
             var hash = new HashLiteral(token);
@@ -290,7 +314,7 @@ public class Parser {
         }
     }
 
-    public static class NameParselet implements PrefixParser {
+    private static class NameParselet implements PrefixParser {
 
         @Override
         public Expression apply(Parser parser, Token token) {
@@ -298,14 +322,14 @@ public class Parser {
         }
     }
 
-    public static class NumberParselet implements PrefixParser {
+    private static class NumberParselet implements PrefixParser {
         @Override
         public Expression apply(Parser parser, Token token) {
             return new NumberLiteral(token, token.value());
         }
     }
 
-    public static class StringParselet implements PrefixParser {
+    private static class StringParselet implements PrefixParser {
         @Override
         public Expression apply(Parser parser, Token token) {
             return new StringLiteral(token, token.value());

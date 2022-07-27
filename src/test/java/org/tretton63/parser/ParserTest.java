@@ -56,7 +56,7 @@ public class ParserTest {
     @Test void testFunctionBlock() {
         var parser = new Parser("""
                 function hej() {
-                1+1;
+                (1+2)*10 / 2;
                 }""");
         var program = parser.parse();
         System.out.println(program);
