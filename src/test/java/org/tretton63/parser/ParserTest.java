@@ -51,7 +51,14 @@ public class ParserTest {
     void testParseVarWithModulo() {
         var parser = new Parser("var x = 100 % 10;");
         var token = parser.parse();
+    }
 
-
+    @Test void testFunctionBlock() {
+        var parser = new Parser("""
+                function hej() {
+                1+1;
+                }""");
+        var program = parser.parse();
+        System.out.println(program);
     }
 }

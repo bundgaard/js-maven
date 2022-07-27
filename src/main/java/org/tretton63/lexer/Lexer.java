@@ -117,6 +117,7 @@ public class Lexer {
             out.append(currentChar);
             nextChar();
         }
+        pis.unread(currentChar);
         return out.toString();
     }
 

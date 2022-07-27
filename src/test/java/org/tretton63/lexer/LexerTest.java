@@ -195,6 +195,62 @@ public class LexerTest {
             current++;
             token = lexer.nextToken();
         }
+    }
+
+    @Test
+    void testFunctionTokenBlock() {
+        var expectedTokens = List.of(
+                new Token("function", Type.Function),
+                new Token("hej", Type.Identifier),
+                new Token("(", Type.OpenParen),
+                new Token(")", Type.CloseParen),
+                new Token("{", Type.OpenCurly),
+                new Token("\"hej\"", Type.String),
+                new Token(";", Type.Semi),
+                new Token("}", Type.CloseCurly)
+        );
+        var lexer = new Lexer("""
+                function hej() {
+                "hej";
+                }""");
+        var current = 0;
+        var token = lexer.nextToken();
+        while (token.type() != Type.EOF) {
+            assertEquals(expectedTokens.get(current).type(), token.type(), token.value());
+            token = lexer.nextToken();
+            current++;
+        }
+    }
+
+    @Test
+    void testFunctionTokenBlockWithArguments() {
+        var expectedTokens = List.of(
+                new Token("function", Type.Function),
+                new Token("hej", Type.Identifier),
+                new Token("(", Type.OpenParen),
+                new Token("a", Type.Identifier),
+                new Token(",", Type.Comma),
+                new Token("b", Type.Identifier),
+                new Token(",", Type.Comma),
+                new Token("c", Type.Identifier),
+                new Token(")", Type.CloseParen),
+                new Token("{", Type.OpenCurly),
+                new Token("\"hej\"", Type.String),
+                new Token(";", Type.Semi),
+                new Token("}", Type.CloseCurly)
+        );
+        var lexer = new Lexer("""
+                function hej(a,b,c) {
+                "hej";
+                }""");
+        var current = 0;
+        var token = lexer.nextToken();
+        while (token.type() != Type.EOF) {
+            assertEquals(expectedTokens.get(current).type(), token.type(), token.value());
+            token = lexer.nextToken();
+            current++;
+        }
+
 
     }
 }

@@ -1,9 +1,7 @@
 package org.tretton63.eval;
 
-import jdk.security.jarsigner.JarSignerException;
 import org.tretton63.ast.*;
 
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,10 +12,31 @@ import java.util.stream.Collectors;
 public class Evaluator {
 
     private final Environment scope = new Environment();
+    private static final Map<String, BuiltinObject> builtins = new HashMap<>();
+
+    static {
+        builtins.put("println", (args) -> {
+            if (args.length == 1) {
+                System.out.println(args[0]);
+            }
+            return new NullObject();
+        });
+        builtins.put("len", (args) -> {
+            if (args.length != 1) {
+                return new JSError("wrong number of arguments");
+            }
+
+            if (args[0] instanceof StringObject str) {
+                return new NumberObject(str.getValue().length());
+            } else {
+                return new JSError("len is not supported");
+            }
+        });
+    }
 
     private List<JSObject> evalExpressions(List<Expression> elements, Environment environment) {
         var result = new ArrayList<JSObject>();
-        for(var element : elements) {
+        for (var element : elements) {
             var evaluated = eval(element, environment);
             if (evaluated instanceof JSError) {
                 return List.of(evaluated);
@@ -26,6 +45,7 @@ public class Evaluator {
         }
         return result;
     }
+
     public JSObject eval(Node program, Environment environment) {
         switch (program) {
             case ArrayLiteral array -> {
