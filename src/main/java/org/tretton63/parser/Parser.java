@@ -5,7 +5,9 @@ import org.tretton63.lexer.Lexer;
 import org.tretton63.lexer.Token;
 import org.tretton63.lexer.Type;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.tretton63.ast.Priority.Lowest;
@@ -26,6 +28,16 @@ public class Parser {
         prefixParserMap.put(String, new StringParselet());
         prefixParserMap.put(Number, new NumberParselet());
         prefixParserMap.put(OpenCurly, new HashParselet());
+        prefixParserMap.put(OpenBracket, new ArrayParselet());
+
+        infixParserMap.put(Plus, new ParseInfixExpression());
+        infixParserMap.put(Minus, new ParseInfixExpression());
+        infixParserMap.put(Equal, new ParseInfixExpression());
+        infixParserMap.put(Multiply, new ParseInfixExpression());
+        infixParserMap.put(Divide, new ParseInfixExpression());
+        infixParserMap.put(Percentage, new ParseInfixExpression());
+
+        // IndexExpression and CallExpression
 
         nextToken();
         nextToken();
@@ -40,6 +52,8 @@ public class Parser {
             }
             nextToken();
         }
+        System.out.println("Added " + p.statements().size() + " statement(s)");
+        System.out.println(p);
         return p;
     }
 
@@ -52,9 +66,30 @@ public class Parser {
     }
 
     private Statement parseVariable() {
+        System.out.println("1. parseVariable current=" + current);
+        var varToken = current;
+        if (!expectPeek(Type.Identifier)) {
+            return null;
+        }
 
-       // var variableStatement = new VariableStatement(current);
-        return null;
+        System.out.println("2. parseVariable current=" + current);
+        var name = new Identifier(current, current.value());
+        if (!expectPeek(Equal)) {
+            System.out.println("2a. return null" + expectPeek(Equal) + " " + next);
+            return null;
+        }
+        nextToken();
+        System.out.println("3. parseVariable current=" + current);
+        var value = parseExpression(Lowest);
+        if (peekTokenIs(Type.Semi)) {
+            nextToken();
+        }
+
+        System.out.println(varToken);
+        System.out.println(name);
+        System.out.println(value);
+        return new VariableStatement(varToken, name, value);
+
     }
 
     private ExpressionStatement parseExpressionStatement() {
@@ -90,6 +125,7 @@ public class Parser {
 
         var left = prefix.apply(this, current);
         while (!peekTokenIs(Semi) && priority.compareTo(peekPrecedence()) < 0) {
+            System.out.println("next " + next.type());
             var infix = infixParserMap.get(next.type());
             if (infix == null) {
                 return left;
@@ -133,6 +169,48 @@ public class Parser {
         return false;
     }
 
+    public class ParseInfixExpression implements InfixParser {
+
+        @Override
+        public Expression apply(Parser parser, Expression left, Token token) {
+            var expression = new InfixExpression(current, left, current.value());
+            var curPrecedence = currentPrecedence();
+            nextToken();
+            expression.setRight(parseExpression(curPrecedence));
+            return expression;
+        }
+    }
+    private List<Expression> parseExpressionList(Type end) {
+        var list = new ArrayList<Expression>();
+        if (peekTokenIs(end)) {
+            nextToken();
+            return list;
+        }
+
+        nextToken();
+        list.add(parseExpression(Lowest));
+
+        while(peekTokenIs(Comma)) {
+            nextToken(); // Eat Comma
+            nextToken(); // Expression
+            list.add(parseExpression(Lowest));
+        }
+
+        if (!expectPeek(end)) {
+            return null;
+        }
+        return list;
+    }
+
+    public class ArrayParselet implements PrefixParser{
+
+        @Override
+        public Expression apply(Parser parser, Token token) {
+            var array = new ArrayLiteral(token);
+            array.setElements(parseExpressionList(CloseBracket));
+            return array;
+        }
+    }
     public class HashParselet implements PrefixParser {
         @Override
         public Expression apply(Parser parser, Token token) {

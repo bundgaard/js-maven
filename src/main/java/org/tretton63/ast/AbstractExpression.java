@@ -26,4 +26,9 @@ public class AbstractExpression implements Expression {
     public String getValue() {
         return value;
     }
+
+
+    public String toString() {
+        return getClass().getSimpleName() + "(value=" + value + ")";
+    }
 }

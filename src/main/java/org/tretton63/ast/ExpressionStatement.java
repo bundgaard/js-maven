@@ -17,4 +17,11 @@ public class ExpressionStatement implements Statement, Expression {
     public Expression getExpression() {
         return expression;
     }
+
+    public String toString() {
+        if (expression != null) {
+            return expression.toString();
+        }
+        return "<null>";
+    }
 }

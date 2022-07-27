@@ -31,4 +31,27 @@ public class ParserTest {
         var actual = parser.parse();
         System.out.println(actual);
     }
+
+
+    @Test
+    void testParseInfix() {
+        var parser = new Parser("var s = 12 + 1 * 6;");
+        var program = parser.parse();
+        System.out.println(program);
+    }
+
+    @Test
+    void testParseXEqual100() {
+
+        var parser = new Parser("var x = 100;");
+        var token = parser.parse();
+    }
+
+    @Test
+    void testParseVarWithModulo() {
+        var parser = new Parser("var x = 100 % 10;");
+        var token = parser.parse();
+
+
+    }
 }

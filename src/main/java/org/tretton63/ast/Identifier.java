@@ -7,4 +7,5 @@ public class Identifier extends AbstractExpression {
     public Identifier(Token token, String value) {
         super(token, value);
     }
+
 }

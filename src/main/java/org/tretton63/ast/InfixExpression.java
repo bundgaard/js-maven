@@ -18,4 +18,28 @@ public class InfixExpression implements Expression {
     public void setRight(Expression newRight) {
         this.right = newRight;
     }
+
+    public String toString() {
+        return "(" +
+                left.toString() +
+                " " + operator + " " +
+                right.toString() +
+                ")";
+    }
+
+    public Token getToken() {
+        return token;
+    }
+
+    public Expression getLeft() {
+        return left;
+    }
+
+    public String getOperator() {
+        return operator;
+    }
+
+    public Expression getRight() {
+        return right;
+    }
 }

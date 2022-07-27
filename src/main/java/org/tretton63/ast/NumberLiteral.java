@@ -7,4 +7,9 @@ public class NumberLiteral extends AbstractExpression {
     public NumberLiteral(Token token, String value) {
         super(token, value);
     }
+
+    @Override
+    public String toString() {
+        return String.valueOf(getValue());
+    }
 }

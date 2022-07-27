@@ -14,6 +14,7 @@ public enum Priority {
         PRECEDENCES.put(Type.Minus, Sum);
         PRECEDENCES.put(Type.Multiply, Product);
         PRECEDENCES.put(Type.Divide, Product);
+        PRECEDENCES.put(Type.Percentage, Product);
 
     }
 }
