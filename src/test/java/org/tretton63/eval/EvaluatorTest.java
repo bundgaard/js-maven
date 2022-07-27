@@ -2,12 +2,11 @@ package org.tretton63.eval;
 
 import org.junit.jupiter.api.Test;
 import org.tretton63.ast.Identifier;
-import org.tretton63.ast.Program;
 import org.tretton63.lexer.Token;
 import org.tretton63.lexer.Type;
 import org.tretton63.parser.Parser;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class EvaluatorTest {
 
