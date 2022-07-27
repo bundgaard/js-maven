@@ -21,6 +21,7 @@ public class Lexer {
         KEYWORDS.put("undefined", Type.Undefined);
         KEYWORDS.put("true", Type.True);
         KEYWORDS.put("false", Type.False);
+        KEYWORDS.put("return", Type.Return);
     }
 
     public Lexer(String input) {

@@ -16,9 +16,9 @@ class EvaluatorTest {
         var evaler = new Evaluator();
         var env = new Evaluator.Environment();
         env.put("x", new NumberObject(100L));
+        evaler.setEnvironment(env);
         var result = evaler.eval(
-                new Identifier(new Token("x", Type.Identifier), "x"),
-                env);
+                new Identifier(new Token("x", Type.Identifier), "x"));
         if (result instanceof JSError err) {
             System.out.println(err);
         } else if (result instanceof NumberObject number) {
@@ -34,7 +34,7 @@ class EvaluatorTest {
         var evaluator = new Evaluator();
         var parser = new Parser("var x = 100;");
         var environment = new Evaluator.Environment();
-        var result = evaluator.eval(parser.parse(), environment);
+        var result = evaluator.eval(parser.parse());
         System.out.println("Environment");
         environment.forEach((key, value) -> {
             System.out.println(key + " " + value);
@@ -45,9 +45,10 @@ class EvaluatorTest {
     @Test
     void testInfix() {
         var evaluator = new Evaluator();
-        var environment = new Evaluator.Environment();
+
         var parser = new Parser("var a = 1 + 1;\nvar b = 2 * 2;\nvar c = 100 % 10;");
-        var result = evaluator.eval(parser.parse(), environment);
+        var result = evaluator.eval(parser.parse());
+        var environment = evaluator.getEnvironment();
         System.out.println(result);
         System.out.println("=".repeat(80));
         System.out.println(environment);
@@ -56,9 +57,10 @@ class EvaluatorTest {
     @Test
     void testArray() {
         var evaluator = new Evaluator();
-        var environment = new Evaluator.Environment();
+
         var parser = new Parser("var a = [1,2,3,4,5, \"Foo\"];");
-        var result = evaluator.eval(parser.parse(), environment);
+        var result = evaluator.eval(parser.parse());
+        var environment = evaluator.getEnvironment();
         System.out.println(result);
         System.out.println("=".repeat(80));
         System.out.println(environment);

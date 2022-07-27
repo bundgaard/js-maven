@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 public class Evaluator {
 
-    private final Environment scope = new Environment();
+    private Environment environment = new Environment();
     private static final Map<String, BuiltinObject> builtins = new HashMap<>();
 
     static {
@@ -34,10 +34,16 @@ public class Evaluator {
         });
     }
 
-    private List<JSObject> evalExpressions(List<Expression> elements, Environment environment) {
+    public void setEnvironment(Environment newEnvironment) {
+        this.environment = environment;
+    }
+    public Environment getEnvironment() {
+        return environment;
+    }
+    private List<JSObject> evalExpressions(List<Expression> elements) {
         var result = new ArrayList<JSObject>();
         for (var element : elements) {
-            var evaluated = eval(element, environment);
+            var evaluated = eval(element);
             if (evaluated instanceof JSError) {
                 return List.of(evaluated);
             }
@@ -46,17 +52,17 @@ public class Evaluator {
         return result;
     }
 
-    public JSObject eval(Node program, Environment environment) {
+    public JSObject eval(Node program) {
         switch (program) {
             case ArrayLiteral array -> {
-                var elements = evalExpressions(array.elements(), environment);
+                var elements = evalExpressions(array.elements());
                 if (elements.size() == 1) {
                     return elements.get(0);
                 }
                 return new ArrayObject(elements);
             }
             case VariableStatement variableStatement -> {
-                var value = eval(variableStatement.getValue(), environment);
+                var value = eval(variableStatement.getValue());
                 if (value == null) {
                     System.err.println("variablestatement: " + variableStatement.getValue());
                 }
@@ -68,25 +74,25 @@ public class Evaluator {
 
             }
             case Program p -> {
-                return evalProgram(p, environment);
+                return evalProgram(p);
             }
             case Identifier i -> {
-                return evalIdentifier(i, environment);
+                return evalIdentifier(i);
             }
             case ExpressionStatement expressionStatement -> {
-                return eval(expressionStatement.getExpression(), environment);
+                return eval(expressionStatement.getExpression());
             }
             case InfixExpression infixExpression -> {
-                var left = eval(infixExpression.getLeft(), environment);
+                var left = eval(infixExpression.getLeft());
                 if (left instanceof JSError err) {
                     return left;
                 }
-                var right = eval(infixExpression.getRight(), environment);
+                var right = eval(infixExpression.getRight());
                 if (right instanceof JSError) {
                     return right;
                 }
 
-                return evalInfixEvaluator(infixExpression.getOperator(), left, right, environment);
+                return evalInfixEvaluator(infixExpression.getOperator(), left, right);
 
             }
 
@@ -104,16 +110,16 @@ public class Evaluator {
         return null;
     }
 
-    private JSObject evalInfixEvaluator(String operator, JSObject left, JSObject right, Environment environment) {
+    private JSObject evalInfixEvaluator(String operator, JSObject left, JSObject right) {
         if (left instanceof NumberObject && right instanceof NumberObject) {
-            return evalNumberInfixExpression(operator, left, right, environment);
+            return evalNumberInfixExpression(operator, left, right);
         } else if (left instanceof StringObject && right instanceof StringObject) {
-            return evalStringInfixExpression(operator, left, right, environment);
+            return evalStringInfixExpression(operator, left, right);
         }
         return null;
     }
 
-    private JSObject evalNumberInfixExpression(String operator, JSObject left, JSObject right, Environment environment) {
+    private JSObject evalNumberInfixExpression(String operator, JSObject left, JSObject right) {
         if (left instanceof NumberObject leftNumber && right instanceof NumberObject rightNumber) {
             return switch (operator) {
                 case "+" -> new NumberObject(leftNumber.getValue() + rightNumber.getValue());
@@ -128,15 +134,15 @@ public class Evaluator {
         return null;
     }
 
-    private JSObject evalStringInfixExpression(String operator, JSObject left, JSObject right, Environment environment) {
+    private JSObject evalStringInfixExpression(String operator, JSObject left, JSObject right) {
 
         return null;
     }
 
-    private JSObject evalProgram(Program program, Environment environment) {
+    private JSObject evalProgram(Program program) {
         var result = new JSObject();
         for (var statement : program.statements()) {
-            result = eval(statement, environment);
+            result = eval(statement);
             if (result instanceof JSError err) {
                 System.err.println(err);
             } else if (result instanceof ReturnValue retValue) {
@@ -146,7 +152,7 @@ public class Evaluator {
         return result;
     }
 
-    private JSObject evalIdentifier(Identifier n, Environment environment) {
+    private JSObject evalIdentifier(Identifier n) {
         var identifier = environment.get(n.getValue());
         if (identifier != null) {
             return identifier;

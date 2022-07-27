@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import static org.tretton63.ast.Priority.Lowest;
 import static org.tretton63.lexer.Type.*;
@@ -22,8 +21,8 @@ public class Parser {
     private Token current;
     private Token next;
 
-    private final Map<Type, PrefixParser> prefixParserMap = new HashMap<>();
-    private final Map<Type, InfixParser> infixParserMap = new HashMap<>();
+    private static final Map<Type, PrefixParser> prefixParserMap = new HashMap<>();
+    private static final Map<Type, InfixParser> infixParserMap = new HashMap<>();
 
     public Parser(String input) {
         lexer = new Lexer(input);
@@ -36,12 +35,12 @@ public class Parser {
         prefixParserMap.put(Function, new FunctionParselet());
         prefixParserMap.put(OpenParen, new GroupedExpressionParselet());
 
-        infixParserMap.put(Plus, new ParseInfixExpression());
-        infixParserMap.put(Minus, new ParseInfixExpression());
-        infixParserMap.put(Equal, new ParseInfixExpression());
-        infixParserMap.put(Multiply, new ParseInfixExpression());
-        infixParserMap.put(Divide, new ParseInfixExpression());
-        infixParserMap.put(Percentage, new ParseInfixExpression());
+        infixParserMap.put(Plus, new InfixExpressionParselet());
+        infixParserMap.put(Minus, new InfixExpressionParselet());
+        infixParserMap.put(Equal, new InfixExpressionParselet());
+        infixParserMap.put(Multiply, new InfixExpressionParselet());
+        infixParserMap.put(Divide, new InfixExpressionParselet());
+        infixParserMap.put(Percentage, new InfixExpressionParselet());
         infixParserMap.put(OpenParen, new CallExpressionParselet());
 
         // IndexExpression and CallExpression
@@ -193,7 +192,7 @@ public class Parser {
         }
     }
 
-    public class ParseInfixExpression implements InfixParser {
+    private class InfixExpressionParselet implements InfixParser {
 
         @Override
         public Expression apply(Parser parser, Expression left, Token token) {
