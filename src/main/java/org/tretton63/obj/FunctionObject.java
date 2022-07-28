@@ -1,20 +1,30 @@
-package org.tretton63.eval;
+package org.tretton63.obj;
 
-import org.tretton63.ast.Expression;
+import org.tretton63.ast.BlockStatement;
 import org.tretton63.ast.Identifier;
+import org.tretton63.eval.Environment;
 import org.tretton63.lexer.Token;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class FunctionObject implements Expression {
+public class FunctionObject extends AbstractJSObject {
     private final Token token;
     private String name;
     private List<Identifier> parameters;
     private BlockStatement body;
+    private final Environment environment;
 
-    public FunctionObject(Token token) {
+    public FunctionObject(Token token, String name, List<Identifier> parameters, BlockStatement body, Environment environment) {
         this.token = token;
+        this.environment = environment;
+        this.name = name;
+        this.body = body;
+        this.parameters = parameters;
+    }
+
+    public Environment getEnvironment() {
+        return environment;
     }
 
     public Token getToken() {

@@ -2,13 +2,11 @@ package org.tretton63.parser;
 
 import org.tretton63.ast.Identifier;
 import org.tretton63.ast.*;
-import org.tretton63.eval.BlockStatement;
-import org.tretton63.eval.CallExpression;
-import org.tretton63.eval.FunctionObject;
-import org.tretton63.lexer.JSLexer;
+import org.tretton63.js.JSLexer;
 import org.tretton63.lexer.Token;
 import org.tretton63.lexer.Type;
 
+import java.lang.String;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,8 +16,6 @@ import static org.tretton63.ast.Priority.Lowest;
 import static org.tretton63.lexer.Type.Number;
 import static org.tretton63.lexer.Type.String;
 import static org.tretton63.lexer.Type.*;
-
-import java.lang.String;
 
 public class Parser extends AbstractParser {
 
@@ -44,8 +40,7 @@ public class Parser extends AbstractParser {
         infixParserMap.put(Divide, new InfixExpressionParselet());
         infixParserMap.put(Percentage, new InfixExpressionParselet());
         infixParserMap.put(OpenParen, new CallExpressionParselet());
-
-        // IndexExpression and CallExpression
+        infixParserMap.put(OpenBracket, new IndexExpressionParselet());
 
         nextToken();
         nextToken();
@@ -163,6 +158,7 @@ public class Parser extends AbstractParser {
         return list;
     }
 
+
     private List<Identifier> parseFunctionArguments() {
         var list = new ArrayList<Identifier>();
         if (peekTokenIs(CloseParen)) {
@@ -184,6 +180,20 @@ public class Parser extends AbstractParser {
             return null;
         }
         return list;
+    }
+
+    private BlockStatement parseBlockStatement() {
+        var block = new BlockStatement(current());
+        nextToken();
+
+        while (!currentTokenIs(CloseCurly) && !currentTokenIs(EOF)) {
+            var statement = parseStatement();
+            if (statement != null) {
+                block.addStatement(statement);
+            }
+            nextToken();
+        }
+        return block;
     }
 
     private class GroupedExpressionParselet implements PrefixParser {
@@ -222,25 +232,25 @@ public class Parser extends AbstractParser {
         }
     }
 
-    private BlockStatement parseBlockStatement() {
-        var block = new BlockStatement(current());
-        nextToken();
+    private class IndexExpressionParselet implements InfixParser {
 
-        while (!currentTokenIs(CloseCurly) && !currentTokenIs(EOF)) {
-            var statement = parseStatement();
-            if (statement != null) {
-                block.addStatement(statement);
-            }
+        @Override
+        public Expression apply(Parser parser, Expression left, Token token) {
+            var expression = new IndexExpression(token, left);
             nextToken();
+            expression.setIndex(parseExpression(Lowest));
+            if (peekTokenIs(CloseBracket)) {
+                return null;
+            }
+            return expression;
         }
-        return block;
     }
 
     private class FunctionParselet implements PrefixParser {
 
         @Override
         public Expression apply(Parser parser, Token token) {
-            var function = new FunctionObject(current());
+            var function = new FunctionLiteral(current());
             nextToken();
             function.setName(current().value());
             if (!expectPeek(OpenParen)) {
@@ -307,9 +317,5 @@ public class Parser extends AbstractParser {
             return new StringLiteral(token, token.value());
         }
     }
-
-
-    //////////////////////////////
-
 
 }

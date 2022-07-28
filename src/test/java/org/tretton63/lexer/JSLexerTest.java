@@ -1,6 +1,7 @@
 package org.tretton63.lexer;
 
 import org.junit.jupiter.api.Test;
+import org.tretton63.js.JSLexer;
 
 import java.util.List;
 
@@ -252,5 +253,46 @@ public class JSLexerTest {
         }
 
 
+    }
+
+
+    @Test
+    void testFunctionBlock() {
+        var expectedTokens = List.of(
+                new Token("function", Type.Function),
+                new Token("hej", Type.Identifier),
+                new Token("(", Type.OpenParen),
+                new Token(")", Type.CloseParen),
+                new Token("{", Type.OpenCurly),
+                new Token("1", Type.Number),
+                new Token("+", Type.Plus),
+                new Token("1", Type.Number),
+                new Token(";", Type.Semi),
+                new Token("}", Type.CloseCurly),
+                new Token("println", Type.Identifier),
+                new Token("(", Type.OpenParen),
+                new Token("hej", Type.Identifier),
+                new Token("(", Type.OpenParen),
+                new Token(")", Type.CloseParen),
+                new Token(")", Type.CloseParen),
+                new Token(";", Type.Semi)
+
+
+        );
+        var lexer = new JSLexer("""
+                function hej() {
+                1+1;
+                }
+                                
+                println(hej());""");
+
+        var current = 0;
+        var token = lexer.nextToken();
+        while (token.type() != Type.EOF) {
+            System.out.println(token);
+            assertEquals(expectedTokens.get(current).type(), token.type());
+            current++;
+            token = lexer.nextToken();
+        }
     }
 }

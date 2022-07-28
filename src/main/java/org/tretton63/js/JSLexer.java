@@ -1,4 +1,9 @@
-package org.tretton63.lexer;
+package org.tretton63.js;
+
+import org.tretton63.lexer.AbstractLexer;
+import org.tretton63.lexer.Source;
+import org.tretton63.lexer.Token;
+import org.tretton63.lexer.Type;
 
 import java.io.IOException;
 import java.util.HashMap;

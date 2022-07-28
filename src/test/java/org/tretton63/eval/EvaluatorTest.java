@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.tretton63.ast.Identifier;
 import org.tretton63.lexer.Token;
 import org.tretton63.lexer.Type;
+import org.tretton63.obj.JSError;
+import org.tretton63.obj.NumberObject;
 import org.tretton63.parser.Parser;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,7 +15,7 @@ class EvaluatorTest {
     @Test
     void testEvaluatorIdentifier() {
         var evaler = new Evaluator();
-        var env = new Evaluator.Environment();
+        var env = new Environment();
         env.put("x", new NumberObject(100L));
         evaler.setEnvironment(env);
         var result = evaler.eval(
@@ -32,7 +34,7 @@ class EvaluatorTest {
     void testProgram() {
         var evaluator = new Evaluator();
         var parser = new Parser("var x = 100;");
-        var environment = new Evaluator.Environment();
+        var environment = new Environment();
         var result = evaluator.eval(parser.parse());
         System.out.println("Environment");
         environment.forEach((key, value) -> {
@@ -65,4 +67,30 @@ class EvaluatorTest {
         System.out.println(environment);
     }
 
+
+    @Test
+    void testIndexExpression() {
+        var evaluator = new Evaluator();
+        var parser = new Parser("var a = [1,2,3,4];\nprintln(a[0]);");
+        var result = evaluator.eval(parser.parse());
+        var environment = evaluator.getEnvironment();
+        System.out.println(result);
+        System.out.println(environment);
+    }
+
+    @Test
+    void testFunctionBlock() {
+        var evaluator = new Evaluator();
+        var parser = new Parser("""
+                function hej() {
+                1+1;
+                }
+                                
+                println(hej());
+                """);
+        var result = evaluator.eval(parser.parse());
+        var environment = evaluator.getEnvironment();
+        System.out.println(result);
+        System.out.println(environment);
+    }
 }

@@ -1,6 +1,6 @@
-package org.tretton63.eval;
+package org.tretton63.obj;
 
-public class NumberObject extends JSObject {
+public class NumberObject implements JSObject {
     private long value;
 
     public NumberObject(long value) {

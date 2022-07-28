@@ -1,18 +1,16 @@
 package org.tretton63.eval;
 
 import org.tretton63.ast.*;
+import org.tretton63.obj.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
+import java.util.*;
 
 public class Evaluator {
 
     private Environment environment = new Environment();
     private static final Map<String, BuiltinObject> builtins = new HashMap<>();
+
+    private static final NullObject nullobject = new NullObject();
 
     static {
         builtins.put("println", (args) -> {
@@ -37,22 +35,16 @@ public class Evaluator {
     public void setEnvironment(Environment newEnvironment) {
         this.environment = environment;
     }
+
     public Environment getEnvironment() {
         return environment;
     }
-    private List<JSObject> evalExpressions(List<Expression> elements) {
-        var result = new ArrayList<JSObject>();
-        for (var element : elements) {
-            var evaluated = eval(element);
-            if (evaluated instanceof JSError) {
-                return List.of(evaluated);
-            }
-            result.add(evaluated);
-        }
-        return result;
-    }
 
     public JSObject eval(Node program) {
+        return eval(program, environment);
+    }
+
+    public JSObject eval(Node program, Environment environment) {
         switch (program) {
             case ArrayLiteral array -> {
                 var elements = evalExpressions(array.elements());
@@ -73,6 +65,13 @@ public class Evaluator {
                 environment.put(variableStatement.getName().getValue(), value);
 
             }
+            case FunctionLiteral fn -> {
+                var obj = new FunctionObject(fn.getToken(), fn.getName(), fn.getParameters(), fn.getBody(), environment);
+                if (!Objects.equals(fn.getName(), "")) {
+                    environment.put(fn.getName(), obj);
+                }
+                return obj;
+            }
             case Program p -> {
                 return evalProgram(p);
             }
@@ -82,18 +81,30 @@ public class Evaluator {
             case ExpressionStatement expressionStatement -> {
                 return eval(expressionStatement.getExpression());
             }
+            case CallExpression callExpression -> {
+                var function = eval(callExpression.getFunction());
+                if (function instanceof JSError err) {
+                    return err;
+                }
+                var args = evalExpressions(callExpression.getArguments());
+                if (args.size() == 1 && args.get(0) instanceof JSError err) {
+                    return err;
+                }
+                return applyFunction(function, args);
+
+            }
             case InfixExpression infixExpression -> {
                 var left = eval(infixExpression.getLeft());
                 if (left instanceof JSError err) {
-                    return left;
+                    return err;
                 }
+
                 var right = eval(infixExpression.getRight());
-                if (right instanceof JSError) {
-                    return right;
+                if (right instanceof JSError err) {
+                    return err;
                 }
 
                 return evalInfixEvaluator(infixExpression.getOperator(), left, right);
-
             }
 
             case NumberLiteral number -> {
@@ -107,7 +118,31 @@ public class Evaluator {
             }
 
         }
-        return null;
+        return nullobject;
+    }
+
+    private JSObject applyFunction(JSObject function, List<JSObject> args) {
+        if (function instanceof BuiltinObject fn) {
+            return fn.apply(args.toArray(new JSObject[0]));
+        } else if (function instanceof FunctionObject fn) {
+            var extendedEnvironment = extendEnvironment(fn, args);
+            var evaluated = eval(fn.getBody(), extendedEnvironment);
+            return unwrapReturnValue(evaluated);
+        }
+        return new JSError("not a function " + function.getClass().getSimpleName());
+    }
+
+    private JSObject unwrapReturnValue(JSObject obj) {
+        if (obj instanceof ReturnValue retValue) {
+            return retValue.getValue();
+        }
+        return obj;
+    }
+
+    private Environment extendEnvironment(FunctionObject fn, List<JSObject> args) {
+        var environ = Environment.withOuter(fn.getEnvironment());
+
+        return environ;
     }
 
     private JSObject evalInfixEvaluator(String operator, JSObject left, JSObject right) {
@@ -116,7 +151,19 @@ public class Evaluator {
         } else if (left instanceof StringObject && right instanceof StringObject) {
             return evalStringInfixExpression(operator, left, right);
         }
-        return null;
+        return nullobject;
+    }
+
+    private List<JSObject> evalExpressions(List<Expression> elements) {
+        var result = new ArrayList<JSObject>();
+        for (var element : elements) {
+            var evaluated = eval(element);
+            if (evaluated instanceof JSError) {
+                return List.of(evaluated);
+            }
+            result.add(evaluated);
+        }
+        return result;
     }
 
     private JSObject evalNumberInfixExpression(String operator, JSObject left, JSObject right) {
@@ -131,16 +178,16 @@ public class Evaluator {
             };
         }
 
-        return null;
+        return nullobject;
     }
 
     private JSObject evalStringInfixExpression(String operator, JSObject left, JSObject right) {
 
-        return null;
+        return nullobject;
     }
 
     private JSObject evalProgram(Program program) {
-        var result = new JSObject();
+        JSObject result = nullobject;
         for (var statement : program.statements()) {
             result = eval(statement);
             if (result instanceof JSError err) {
@@ -157,41 +204,12 @@ public class Evaluator {
         if (identifier != null) {
             return identifier;
         }
+        var builtin = builtins.get(n.getValue());
+        if (builtin != null) {
+            return builtin;
+        }
 
         return new JSError("identifier " + n.getValue() + " not found!");
     }
 
-    public static class Environment {
-        private final Map<String, JSObject> store;
-        private final Environment outer;
-
-        private Environment(Environment outer) {
-            store = new HashMap<>();
-            this.outer = outer;
-        }
-
-        public Environment() {
-            this(null);
-        }
-
-        public JSObject get(String name) {
-            return store.get(name);
-        }
-
-        public void put(String name, JSObject object) {
-            store.put(name, object);
-        }
-
-        public static Environment withOuter(Environment outer) {
-            return new Environment(outer);
-        }
-
-        public void forEach(BiConsumer<String, JSObject> fn) {
-            store.forEach(fn);
-        }
-
-        public String toString() {
-            return store.entrySet().stream().map((entry) -> String.format("%s -> %s", entry.getKey(), entry.getValue())).collect(Collectors.joining("\n"));
-        }
-    }
 }

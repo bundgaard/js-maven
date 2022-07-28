@@ -1,9 +1,7 @@
-package org.tretton63.eval;
+package org.tretton63.ast;
 
-import org.tretton63.ast.Statement;
 import org.tretton63.lexer.Token;
 
-import java.awt.image.AreaAveragingScaleFilter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;

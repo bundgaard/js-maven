@@ -1,9 +1,9 @@
-package org.tretton63.eval;
+package org.tretton63.obj;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ArrayObject extends JSObject {
+public class ArrayObject extends AbstractJSObject {
     private final List<JSObject> elements;
 
     public ArrayObject(List<JSObject> elements) {

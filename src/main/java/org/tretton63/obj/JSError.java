@@ -1,6 +1,6 @@
-package org.tretton63.eval;
+package org.tretton63.obj;
 
-public class JSError extends JSObject {
+public class JSError extends AbstractJSObject {
 
     private final String message;
 
