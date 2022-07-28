@@ -7,11 +7,11 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class LexerTest {
+public class JSLexerTest {
 
     @Test
     void testLexer() {
-        var lexer = new Lexer("100+3");
+        var lexer = new JSLexer("100+3");
         var token = lexer.nextToken();
 
         assertEquals(Type.Number, token.type());
@@ -37,7 +37,7 @@ public class LexerTest {
                         */""", Type.CommentBlock)
         );
 
-        var lexer = new Lexer("""
+        var lexer = new JSLexer("""
                 /* Hello World
                 */""");
         var token = lexer.nextToken();
@@ -54,7 +54,7 @@ public class LexerTest {
     void testCommentLine() {
         var expectedTokens = List.of(new Token("// Hello World", Type.CommentLine));
         var current = 0;
-        var lexer = new Lexer("// Hello World");
+        var lexer = new JSLexer("// Hello World");
         var token = lexer.nextToken();
         while (token.type() != Type.EOF) {
             assertEquals(expectedTokens.get(current).type(), Type.CommentLine);
@@ -96,7 +96,7 @@ public class LexerTest {
                 new Token("b", Type.Identifier),
                 new Token(";", Type.Semi)
         );
-        var lexer = new Lexer(input);
+        var lexer = new JSLexer(input);
         var token = lexer.nextToken();
         var sameCounter = 0;
         var current = 0;
@@ -123,7 +123,7 @@ public class LexerTest {
                 new Token("true", Type.True),
                 new Token("false", Type.False));
 
-        var lexer = new Lexer("     var function null undefined true false");
+        var lexer = new JSLexer("     var function null undefined true false");
         int current = 0;
         var token = lexer.nextToken();
         while (token.type() != Type.EOF) {
@@ -137,21 +137,21 @@ public class LexerTest {
 
     @Test
     void testUndefined() {
-        var lexer = new Lexer("undefined");
+        var lexer = new JSLexer("undefined");
         var token = lexer.nextToken();
         assertEquals(Type.Undefined, token.type());
     }
 
     @Test
     void testStringToken() {
-        var lexer = new Lexer("      \"Hello, World\"");
+        var lexer = new JSLexer("      \"Hello, World\"");
         var token = lexer.nextToken();
         assertEquals("\"Hello, World\"", token.value());
     }
 
     @Test
     void testEOF() {
-        var lexer = new Lexer("");
+        var lexer = new JSLexer("");
         var token = lexer.nextToken();
         assertEquals(Type.EOF, token.type());
     }
@@ -165,7 +165,7 @@ public class LexerTest {
                 new Token("*", Type.Multiply),
                 new Token("%", Type.Percentage));
 
-        var lexer = new Lexer("+ - / * %");
+        var lexer = new JSLexer("+ - / * %");
         int i = 0;
         var token = lexer.nextToken();
         while (token.type() != Type.EOF) {
@@ -188,7 +188,7 @@ public class LexerTest {
                 new Token(";", Type.Semi));
 
         var current = 0;
-        var lexer = new Lexer("()[]{},.;");
+        var lexer = new JSLexer("()[]{},.;");
         var token = lexer.nextToken();
         while (token.type() != Type.EOF) {
             assertEquals(expectedTokens.get(current), token);
@@ -209,7 +209,7 @@ public class LexerTest {
                 new Token(";", Type.Semi),
                 new Token("}", Type.CloseCurly)
         );
-        var lexer = new Lexer("""
+        var lexer = new JSLexer("""
                 function hej() {
                 "hej";
                 }""");
@@ -239,7 +239,7 @@ public class LexerTest {
                 new Token(";", Type.Semi),
                 new Token("}", Type.CloseCurly)
         );
-        var lexer = new Lexer("""
+        var lexer = new JSLexer("""
                 function hej(a,b,c) {
                 "hej";
                 }""");
