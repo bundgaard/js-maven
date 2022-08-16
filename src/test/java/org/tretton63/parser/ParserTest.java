@@ -1,14 +1,9 @@
 package org.tretton63.parser;
 
 import org.junit.jupiter.api.Test;
-import org.tretton63.ast.Identifier;
-import org.tretton63.ast.NumberLiteral;
-import org.tretton63.ast.Program;
-import org.tretton63.ast.VariableStatement;
+import org.tretton63.ast.*;
 import org.tretton63.lexer.Token;
 import org.tretton63.lexer.Type;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class ParserTest {
 
@@ -53,11 +48,42 @@ public class ParserTest {
         var token = parser.parse();
     }
 
-    @Test void testFunctionBlock() {
+    @Test
+    void testFunctionBlock() {
+        var expectedProgram = new Program();
+        var functionToken = new Token("function", Type.Function);
+        var statement = new ExpressionStatement(functionToken);
+        var functionLiteral = new FunctionLiteral(functionToken);
+        functionLiteral.setName("hej");
+        var body = new BlockStatement(new Token("{", Type.OpenCurly));
+        var newStatement = new ExpressionStatement(new Token("(", Type.OpenParen));
+        newStatement.setExpression(
+                new InfixExpression(new Token("/", Type.Divide),
+                        new InfixExpression(new Token("", Type.Divide), null, ""),
+                        ""));
+        body.addStatement(newStatement);
+        functionLiteral.setBody(body);
+        statement.setExpression(functionLiteral);
+        expectedProgram.add(statement);
+
         var parser = new Parser("""
                 function hej() {
                 (1+2)*10 / 2;
                 }""");
+        var program = parser.parse();
+        System.out.println(program);
+    }
+
+    @Test
+    void testReturnFunctionBlock() {
+
+        var parser = new Parser("""
+                function hej() {
+                return 1;
+                }
+                                
+                println(hej());
+                """);
         var program = parser.parse();
         System.out.println(program);
     }

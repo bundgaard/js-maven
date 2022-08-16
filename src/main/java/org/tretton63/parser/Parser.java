@@ -62,8 +62,20 @@ public class Parser extends AbstractParser {
         return switch (current().type()) {
             case Var -> parseVariable();
             case CommentBlock, CommentLine -> null;
+            case Return -> parseReturnExpression();
             default -> parseExpressionStatement();
         };
+    }
+
+    private ExpressionStatement parseReturnExpression() {
+        var retExpression = new ReturnExpression(current());
+        retExpression.setExpression(parseExpression(Lowest));
+        if (!peekTokenIs(Semi)) {
+            return null;
+        }
+        var es = new ExpressionStatement(current());
+        es.setExpression(retExpression);
+        return es;
     }
 
     private Statement parseVariable() {

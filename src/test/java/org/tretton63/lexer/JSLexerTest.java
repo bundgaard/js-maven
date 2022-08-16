@@ -295,4 +295,42 @@ public class JSLexerTest {
             token = lexer.nextToken();
         }
     }
+
+    @Test
+    void testReturnFunctionBlock() {
+        var expectedTokens = List.of(
+                new Token("function", Type.Function),
+                new Token("hej", Type.Identifier),
+                new Token("(", Type.OpenParen),
+                new Token(")", Type.CloseParen),
+                new Token("{", Type.OpenCurly),
+                new Token("return", Type.Return),
+                new Token("1", Type.Number),
+                new Token(";", Type.Semi),
+                new Token("}", Type.CloseCurly),
+                new Token("println", Type.Identifier),
+                new Token("(", Type.OpenParen),
+                new Token("hej", Type.Identifier),
+                new Token("(", Type.OpenParen),
+                new Token(")", Type.CloseParen),
+                new Token(")", Type.CloseParen),
+                new Token(";", Type.Semi)
+
+
+        );
+        var lexer = new JSLexer("""
+                function hej() {
+                return 1;
+                }
+                                
+                println(hej());""");
+        var current = 0;
+        var token = lexer.nextToken();
+        while (token.type() != Type.EOF) {
+            System.out.println(token);
+            assertEquals(expectedTokens.get(current).type(), token.type());
+            current++;
+            token = lexer.nextToken();
+        }
+    }
 }

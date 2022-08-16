@@ -14,6 +14,7 @@ public class JSLexer extends AbstractLexer {
 
     private static final Map<String, Type> KEYWORDS = new HashMap<>();
 
+    public static final Token EOF = new Token("<eof>", Type.EOF);
     static {
         KEYWORDS.put("var", Type.Var);
         KEYWORDS.put("function", Type.Function);
@@ -72,7 +73,7 @@ public class JSLexer extends AbstractLexer {
                 return new Token(value, Type.Number);
             } else {
                 if (currentChar() == Source.EOF) {
-                    return new Token("eof", Type.EOF);
+                    return EOF;
                 }
                 return new Token(String.valueOf(currentChar()), Type.Illegal);
             }

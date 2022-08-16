@@ -41,4 +41,14 @@ public class FunctionLiteral implements Expression {
     public FunctionLiteral(Token token) {
         this.token = token;
     }
+
+    @Override
+    public String toString() {
+        return "FunctionLiteral{" +
+                "token=" + token +
+                ", name='" + name + '\'' +
+                ", body=" + body +
+                ", parameters=" + parameters +
+                '}';
+    }
 }
